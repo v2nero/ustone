@@ -1,0 +1,37 @@
+# Copyright (c) 2016 by Nero Liu .  ALL RIGHTS RESERVED.
+# Consult your license regarding permissions and restrictions.
+
+[Defines]
+ INF_VERSION = 0x00010005
+ BASE_NAME = CrtSupportLib
+ MODULE_TYPE = BASE
+ FILE_GUID = 836C1A0E-DE23-48C2-8C68-A83C48C0A730
+ VERSION_STRING = 1.0
+ LIBRARY_CLASS = CrtSupportLib
+
+[Sources]
+ crt.c
+ 
+
+[Packages] 
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  
+[LibraryClasses]
+  UefiLib
+  
+[Protocols]
+ 
+#*************************************************************************
+#*************************************************************************
+#**                                                                     **
+#**        (C)Copyright 1985-2012, American Megatrends, Inc.            **
+#**                                                                     **
+#**                       All Rights Reserved.                          **
+#**                                                                     **
+#**      5555 Oakbrook Parkway, Suite 200, Norcross, GA 30093           **
+#**                                                                     **
+#**                       Phone: (770)-246-8600                         **
+#**                                                                     **
+#*************************************************************************
+#*************************************************************************

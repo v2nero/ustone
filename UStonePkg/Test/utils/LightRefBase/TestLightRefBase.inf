@@ -1,0 +1,68 @@
+#*************************************************************************
+#*************************************************************************
+#**                                                                     **
+#**        (C)Copyright 1985-2012, American Megatrends, Inc.            **
+#**                                                                     **
+#**                       All Rights Reserved.                          **
+#**                                                                     **
+#**      5555 Oakbrook Parkway, Suite 200, Norcross, GA 30093           **
+#**                                                                     **
+#**                       Phone: (770)-246-8600                         **
+#**                                                                     **
+#*************************************************************************
+#*************************************************************************
+## @file
+#   
+##
+
+[Defines]
+ INF_VERSION = 0x00010015
+ VERSION_STRING = 1.0
+ BASE_NAME = TestLightRefBase
+ MODULE_TYPE = UEFI_APPLICATION
+ FILE_GUID = 2A8B321E-011E-4D89-81C2-9712642FA10F
+ ENTRY_POINT = ShellCEntryLib
+
+[Sources]
+  TestLightRefBase.cpp
+
+[Packages]
+  StdLib/StdLib.dec
+  MdePkg/MdePkg.dec
+  ShellPkg/ShellPkg.dec
+  UStonePkg/UStonePkg.dec
+  
+[LibraryClasses]
+  LibC
+  BaseLib
+  UefiBootServicesTableLib
+  UefiLib
+  ShellCEntryLib
+  CppBaseLib
+
+[BuildOptions]
+///wd
+
+#   MSFT:*_*_IA32_CC_FLAGS == /wd 4804 /wd 4164 /nologo /c /WX /GS- /W4 /Gs32768 /Gy /D _EFI /D UNICODE /O1ib2 /GL /FIAutoGen.h /EHs-c- /GR- /GF /Zi /Gm /Zc:wchar_t-
+   MSFT:*_*_IA32_CC_FLAGS == /wd 4804 /wd 4164 /nologo /c /WX /GS- /W4 /Gs32768 /Gy /D _EFI /D UNICODE /FIAutoGen.h /EHs-c- /GR- /GF /Zi /Gm
+#  MSFT:*_*_IA32_PP_FLAGS == 
+
+#  MSFT:*_*_X64_DLINK_FLAGS == /out:"$(BIN_DIR)\SecMain.exe" /base:0x10000000 /pdb:"$(BIN_DIR)\SecMain.pdb" /LIBPATH:"$(VCINSTALLDIR)\Lib\AMD64" /LIBPATH:"$(VCINSTALLDIR)\PlatformSdk\Lib\AMD64" /NOLOGO /SUBSYSTEM:CONSOLE /NODEFAULTLIB /IGNORE:4086 /MAP /OPT:REF /DEBUG /MACHINE:AMD64 /LTCG Kernel32.lib MSVCRTD.lib Gdi32.lib User32.lib Winmm.lib Advapi32.lib
+#  MSFT:*_*_X64_CC_FLAGS == /nologo /W4 /WX /Gy /c /D UNICODE /Od /FIAutoGen.h /EHs-c- /GF /Gs8192 /Zi /Gm /D _CRT_SECURE_NO_WARNINGS /D _CRT_SECURE_NO_DEPRECATE
+  MSFT:*_*_X64_CC_FLAGS == /wd 4804 /wd 4164 /nologo /c /WX /GS- /W4 /Gs32768 /Gy /D _EFI /D UNICODE /FIAutoGen.h /EHs-c- /GR- /GF /Zi /Gm
+#  MSFT:*_*_X64_PP_FLAGS == /nologo /E /TC /FIAutoGen.h
+#  MSFT:*_*_X64_ASM_FLAGS == /nologo /W3 /WX /c /Cx /Zd /W0 /Zi
+#  MSFT:*_*_X64_ASMLINK_FLAGS       == /link /nologo
+#*************************************************************************
+#*************************************************************************
+#**                                                                     **
+#**        (C)Copyright 1985-2012, American Megatrends, Inc.            **
+#**                                                                     **
+#**                       All Rights Reserved.                          **
+#**                                                                     **
+#**      5555 Oakbrook Parkway, Suite 200, Norcross, GA 30093           **
+#**                                                                     **
+#**                       Phone: (770)-246-8600                         **
+#**                                                                     **
+#*************************************************************************
+#*************************************************************************

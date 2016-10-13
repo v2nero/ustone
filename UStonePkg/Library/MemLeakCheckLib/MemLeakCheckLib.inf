@@ -1,0 +1,42 @@
+# Copyright (c) 2016 by Nero Liu .  ALL RIGHTS RESERVED.
+# Consult your license regarding permissions and restrictions.
+
+[Defines]
+ INF_VERSION = 0x00010005
+ BASE_NAME = MemLeakCheckLib
+ MODULE_TYPE = BASE
+ FILE_GUID = AE5F9461-D125-4774-A656-86F0B243F8FD
+ VERSION_STRING = 1.0
+ LIBRARY_CLASS = MemLeakCheckLib
+ DESTRUCTOR = __memleak_deconstruct
+
+[Sources]
+ memleakcheck.c
+ 
+
+[Packages] 
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  UStonePkg/UStonePkg.dec
+  StdLib/StdLib.dec
+  
+[LibraryClasses]
+  UefiLib
+  LibStdio
+  LibStdLib
+  
+[Protocols]
+ 
+#*************************************************************************
+#*************************************************************************
+#**                                                                     **
+#**        (C)Copyright 1985-2012, American Megatrends, Inc.            **
+#**                                                                     **
+#**                       All Rights Reserved.                          **
+#**                                                                     **
+#**      5555 Oakbrook Parkway, Suite 200, Norcross, GA 30093           **
+#**                                                                     **
+#**                       Phone: (770)-246-8600                         **
+#**                                                                     **
+#*************************************************************************
+#*************************************************************************

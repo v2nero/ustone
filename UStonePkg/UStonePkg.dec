@@ -1,0 +1,17 @@
+# Copyright (c) 2016 by Nero Liu .  ALL RIGHTS RESERVED.
+# Consult your license regarding permissions and restrictions.
+ 
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = UStonePkg
+#  PACKAGE_UNI_FILE               = UStonePkg.uni
+  PACKAGE_GUID                   = 5DBDBC33-FC4F-4468-BEF5-1AB159B1AAE7
+  PACKAGE_VERSION                = 1.06
+
+
+[Includes]
+  Include
+  Include/stl
+  Lua/Lua_5.3.3/src
+
+[LibraryClasses]
