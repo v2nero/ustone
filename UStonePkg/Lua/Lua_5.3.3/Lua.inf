@@ -52,3 +52,4 @@
   UefiLib
   ShellCEntryLib
   Lua533Lib
+  LibGdtoa

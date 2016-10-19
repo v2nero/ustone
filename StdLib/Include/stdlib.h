@@ -554,6 +554,9 @@ double  strtod(const char * __restrict nptr, char ** __restrict endptr);
               form, no conversion is performed; the value of nptr is stored in
               the object pointed to by endptr, provided that endptr is not a null pointer.
 **/
+#ifndef strtof
+#define strtof _strtof
+#endif
 float   strtof(const char * __restrict nptr, char ** __restrict endptr);
 
 /** Convert a string to a long double and point to the character after the last converted.

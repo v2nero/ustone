@@ -1,6 +1,10 @@
 
 #pragma once
 
+#if __cplusplus <= 199711L
+#define nullptr NULL
+#endif
+
 typedef void(__cdecl *PF)(void);
 int atexit_cpp(PF pf);
 void initial_objs_cpp();
@@ -76,6 +80,12 @@ inline void operator delete[](void *, void *)
 
 #pragma pop_macro("new")
 
+#ifdef new
+#undef new
+#endif
+#ifdef delete
+#undef delete
+#endif
 
 #if (!defined(MDEPKG_NDEBUG)) && !defined(__CPP_BASE_H__)
 //#define PLACEMENT_NEW(p) new(p, __FILE__, __LINE__)

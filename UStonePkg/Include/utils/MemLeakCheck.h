@@ -79,27 +79,45 @@ void *MemCheck_realloc(
 	const char *pFileName,
 	UINT32 nLine);
 
+void MemCheck_CheckOverride();
+
 #if !defined(MDEPKG_NDEBUG) && !defined(__MEMLEAK_CHECK_NOMACRO__)
 #define AllocatePool(...) MemCheck_AllocatePool(__VA_ARGS__, MEMCHECK_FLAG_NONE, __FILE__, __LINE__)
 #define AllocatePool_Direct(...) MemCheck_AllocatePool(__VA_ARGS__, MEMCHECK_FLAG_DIRECT, __FILE__, __LINE__)
+#define AllocatePool_Nomsg(...) MemCheck_AllocatePool(__VA_ARGS__, MEMCHECK_FLAG_NOMSG, __FILE__, __LINE__)
 #define AllocateZeroPool(...) MemCheck_AllocateZeroPool(__VA_ARGS__, MEMCHECK_FLAG_NONE, __FILE__, __LINE__)
 #define AllocateZeroPool_Direct(...) MemCheck_AllocateZeroPool(__VA_ARGS__, MEMCHECK_FLAG_DIRECT, __FILE__, __LINE__)
+#define AllocateZeroPool_Nomsg(...) MemCheck_AllocateZeroPool(__VA_ARGS__, MEMCHECK_FLAG_NOMSG, __FILE__, __LINE__)
 #define AllocateCopyPool(...) MemCheck_AllocateCopyPool(__VA_ARGS__, MEMCHECK_FLAG_NONE, __FILE__, __LINE__)
 #define AllocateCopyPool_Direct(...) MemCheck_AllocateCopyPool(__VA_ARGS__, MEMCHECK_FLAG_DIRECT, __FILE__, __LINE__)
+#define AllocateCopyPool_Nomsg(...) MemCheck_AllocateCopyPool(__VA_ARGS__, MEMCHECK_FLAG_NOMSG, __FILE__, __LINE__)
 #define ReallocatePool(...) MemCheck_ReallocatePool(__VA_ARGS__, __FILE__, __LINE__)
 #define FreePool(...) MemCheck_FreePool(__VA_ARGS__, __FILE__, __LINE__)
 #define malloc(...) MemCheck_malloc(__VA_ARGS__, MEMCHECK_FLAG_NONE, __FILE__, __LINE__)
 #define malloc_direct(...) MemCheck_malloc(__VA_ARGS__, MEMCHECK_FLAG_DIRECT, __FILE__, __LINE__)
+#define malloc_nomsg(...) MemCheck_malloc(__VA_ARGS__, MEMCHECK_FLAG_NOMSG, __FILE__, __LINE__)
 #define realloc(...) MemCheck_realloc(__VA_ARGS__, __FILE__, __LINE__)
 #define calloc(...) MemCheck_calloc(__VA_ARGS__, MEMCHECK_FLAG_NONE, __FILE__, __LINE__)
 #define calloc_direct(...) MemCheck_calloc(__VA_ARGS__, MEMCHECK_FLAG_DIRECT, __FILE__, __LINE__)
+#define calloc_nomsg(...) MemCheck_calloc(__VA_ARGS__, MEMCHECK_FLAG_NOMSG, __FILE__, __LINE__)
 #define free(...) MemCheck_free(__VA_ARGS__, __FILE__, __LINE__)
+#define mem_checkoverride() MemCheck_CheckOverride()
+#define EfiLibAllocateZeroPool AllocateZeroPool
+#define EfiLibAllocatePool AllocatePool
+#define	EfiLibAllocateCopyPool AllocateCopyPool
+#define MemReallocateZeroPool(oldBuffer, oldSize, newSize ) ReallocatePool(oldSize, newSize, oldBuffer)
 #else
 #define AllocatePool_Direct(...) AllocatePool(__VA_ARGS__)
+#define AllocatePool_Nomsg(...) AllocatePool(__VA_ARGS__)
 #define AllocateZeroPool_Direct(...) AllocateZeroPool(__VA_ARGS__)
+#define AllocateZeroPool_Nomsg(...) AllocateZeroPool(__VA_ARGS__)
 #define AllocateCopyPool_Direct(...) AllocateCopyPool(__VA_ARGS__)
+#define AllocateCopyPool_Nomsg(...) AllocateCopyPool(__VA_ARGS__)
 #define malloc_direct(...) malloc(__VA_ARGS__)
+#define malloc_nomsg(...) malloc(__VA_ARGS__)
 #define calloc_direct(...) calloc(__VA_ARGS__)
+#define calloc_nomsg(...) calloc(__VA_ARGS__)
+#define mem_checkoverride()
 #endif
 
 #ifdef __cplusplus

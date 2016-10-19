@@ -100,8 +100,15 @@ typedef struct {
 #define tail_offset(alloc_size, fname_len) ((alloc_size) + realpool_offset(fname_len))
 #define	to_tail(p, alloc_size, fname_len) ((MemCheckHeapTail *)((CHAR8*)(p) + tail_offset(alloc_size, fname_len)))
 
-#define TRACE_FREEPOS(f, l) DEBUG((EFI_D_ERROR, "%a(%d): <-- free position\n", (f), (l)))
-#define TRACE_ALLOCPOS(f, l) DEBUG((EFI_D_ERROR, "%a(%d): <-- allocate position\n", (f), (l)))
+#define MEMLEAK_TRACE_FLAG	"MemLeakCheck: "
+#define TRACE_FREEPOS(f, l) DEBUG((EFI_D_ERROR, MEMLEAK_TRACE_FLAG"%a(%d): <-- free position\n", (f), (l)))
+#define TRACE_ALLOCPOS(f, l) DEBUG((EFI_D_ERROR, MEMLEAK_TRACE_FLAG"%a(%d): <-- allocate position\n", (f), (l)))
+#define TRACE_OVERRIDE_BY_OTHERS DEBUG((EFI_D_ERROR, MEMLEAK_TRACE_FLAG"memory override by others\n"))
+#define TRACE_OVERRIDE_BY_ITSELF DEBUG((EFI_D_ERROR, MEMLEAK_TRACE_FLAG"memory override by itself\n"))
+#define TRACE_LEAK DEBUG((EFI_D_ERROR, MEMLEAK_TRACE_FLAG"Memory Leak\n"))
+#define TRACE_FREE_NULL DEBUG((EFI_D_ERROR, MEMLEAK_TRACE_FLAG"Free NULL\n"))
+#define TRACE_COPY_NULL DEBUG((EFI_D_ERROR, MEMLEAK_TRACE_FLAG"Copy NULL\n"))
+#define TRACE_ASSERT DEBUG((EFI_D_ERROR, MEMLEAK_TRACE_FLAG"ASSERT\n"))
 
 static LIST_ENTRY gMemListHead = INITIALIZE_LIST_HEAD_VARIABLE(gMemListHead);
 static UINT32 g_index = 0;
@@ -112,6 +119,9 @@ static UINT32 CalcCheckSum(void* pData, size_t len)
 	UINT32 checksum = 0;
 	UINT32 size32 = (UINT32)len/4;
 	UINT32 *pPack32 = (UINT32*)pData;
+	UINT32 size8 = 0;
+	UINT8 *pPack8 = 0;
+	UINT32 i = 0;
 
 	while(size32) {
 		checksum += *pPack32;
@@ -119,9 +129,9 @@ static UINT32 CalcCheckSum(void* pData, size_t len)
 		--size32;
 	}
 
-	UINT32 size8 = len%4;
-	UINT8	*pPack8 = (UINT8*)pPack32;
-	for (UINT32 i = 0; i < size8; i++)
+	size8 = len%4;
+	pPack8 = (UINT8*)pPack32;
+	for (i = 0; i < size8; i++)
 	{
 		checksum += ((UINT32)*pPack8)<<(i*8);
 		++pPack8;
@@ -130,25 +140,67 @@ static UINT32 CalcCheckSum(void* pData, size_t len)
 	return 0-checksum;
 }
 
-static
-VOID MemCheck_FreeLeftPools(void)
+static void _my_checkoverride(LIST_ENTRY *pNode)
 {
 	MemCheckHeapHeader *pHead = NULL;
+	MemCheckHeapMid *pMid = NULL;
+	MemCheckHeapTail *pTail = NULL;
+	
+	pHead = BASE_CR(pNode, MemCheckHeapHeader, list);
+	if (pHead->signature != LEAKCHAECK_HEAD_SIGNATURE) {
+		TRACE_OVERRIDE_BY_OTHERS;
+		ASSERT(pHead->signature == LEAKCHAECK_HEAD_SIGNATURE);
+	}
+	
+	if (CalcCheckSum(
+		((CHAR8*)pHead) + OFFSET_OF(MemCheckHeapHeader, total_size),
+		(UINTN)sizeof(MemCheckHeapHeader) - OFFSET_OF(MemCheckHeapHeader, total_size)) != 0) {
+		TRACE_OVERRIDE_BY_OTHERS;
+		ASSERT(CalcCheckSum(
+			((CHAR8*)pHead) + OFFSET_OF(MemCheckHeapHeader, total_size),
+			(UINTN)sizeof(MemCheckHeapHeader) - OFFSET_OF(MemCheckHeapHeader, total_size)) == 0);
+	}
+	
+	pMid = (MemCheckHeapMid*)(((CHAR8*)pHead)+pHead->pool_offset - sizeof(MemCheckHeapMid));
+	pTail = (MemCheckHeapTail *) (((CHAR8*)pHead)+pHead->tail_offset);
+	
+	if (pMid->signature != LEAKCHAECK_UP_SIGNATURE ||
+	    pTail->tail_offset != pHead->tail_offset ||
+	    CalcCheckSum(pMid, sizeof(MemCheckHeapMid)) != 0) {
+		TRACE_OVERRIDE_BY_OTHERS;
+		TRACE_ALLOCPOS((char *)(pHead+1), pMid->line_num);
+		ASSERT(pMid->signature == LEAKCHAECK_UP_SIGNATURE &&
+		    pTail->tail_offset == pHead->tail_offset && 
+		    CalcCheckSum(pMid, sizeof(MemCheckHeapMid)) == 0);
+	}
+	
+	if (pTail->signature != LEAKCHAECK_TAIL_SIGNATURE) {
+		TRACE_OVERRIDE_BY_ITSELF;
+		TRACE_ALLOCPOS((char *)(pHead+1), pMid->line_num);
+		ASSERT(pTail->signature == LEAKCHAECK_TAIL_SIGNATURE);
+	}
+}
 
+static
+VOID _my_TraceLeftPools(void)
+{
+	MemCheckHeapHeader *pHead = NULL;
 	LIST_ENTRY *pNode;
 
-	while (FALSE == IsListEmpty(&gMemListHead)) {
-		pNode = GetFirstNode(&gMemListHead);
-		RemoveEntryList(pNode);
+	DEBUG((EFI_D_ERROR, MEMLEAK_TRACE_FLAG"%a Start****\n", __FUNCTION__));
+	for (pNode = gMemListHead.ForwardLink; pNode != &gMemListHead; pNode = pNode->ForwardLink) {
+		_my_checkoverride(pNode);
 		pHead = BASE_CR(pNode, MemCheckHeapHeader, list);
 		if (!(pHead->flags & MEMCHECK_FLAG_NOMSG)) {
-			DEBUG((EFI_D_ERROR, "%a(%d): Memory Leak\n", (char *)pHead + sizeof(MemCheckHeapHeader), pHead->line));
+			TRACE_LEAK;
+			TRACE_ALLOCPOS((char *)pHead + sizeof(MemCheckHeapHeader), pHead->line);
 		}
 		if (pHead->flags & MEMCHECK_FLAG_ASSERT) {
+			TRACE_ASSERT;
 			ASSERT(0);
 		}
-		FreePool(pHead);
 	}
+	DEBUG((EFI_D_ERROR, MEMLEAK_TRACE_FLAG"%a End****\n", __FUNCTION__));
 }
 
 RETURN_STATUS
@@ -156,7 +208,7 @@ EFIAPI
 __memleak_deconstruct (VOID)
 {
 #if !defined(MDEPKG_NDEBUG)
-	MemCheck_FreeLeftPools();
+	_my_TraceLeftPools();
 #endif
 	return EFI_SUCCESS;
 }
@@ -300,7 +352,7 @@ MemCheck_AllocateCopyPool (
 	  VOID  *Memory;
 
 	  if (Buffer == NULL) {
-		  DEBUG((EFI_D_ERROR, "Copy NULL pool\n"));
+		  TRACE_COPY_NULL;
 		  TRACE_ALLOCPOS(pFileName, nLine);
 	  }
 	  ASSERT (Buffer != NULL);
@@ -331,20 +383,20 @@ MemCheck_ReallocatePool (
 
 	if (OldBuffer != NULL) {
 		if (is_cpool(OldBuffer)) {
-			DEBUG((EFI_D_ERROR, "not append ReallocatePool to malloc\n"));
+			DEBUG((EFI_D_ERROR, MEMLEAK_TRACE_FLAG"not append ReallocatePool to malloc\n"));
 			TRACE_ALLOCPOS(pFileName, nLine);
 		}
 		ASSERT(!is_cpool(OldBuffer));
 
 		if (!is_mcpool(OldBuffer)) {
-			DEBUG((EFI_D_ERROR, "memory overlap\n"));
+			TRACE_OVERRIDE_BY_OTHERS;
 			TRACE_ALLOCPOS(pFileName, nLine);
 		}
 		ASSERT(is_mcpool(OldBuffer));
 
 		pMid =(MemCheckHeapMid*) ((CHAR8*)OldBuffer - sizeof(MemCheckHeapMid));
 		if (CalcCheckSum(pMid, sizeof(MemCheckHeapMid)) != 0) {
-			DEBUG((EFI_D_ERROR, "memory override by others\n"));
+			TRACE_OVERRIDE_BY_OTHERS;
 			TRACE_FREEPOS(pFileName, nLine);
 			ASSERT(0);
 		}
@@ -359,6 +411,17 @@ MemCheck_ReallocatePool (
 	return NewBuffer;
 }
 
+void MemCheck_CheckOverride()
+{
+	LIST_ENTRY *pNode;
+
+	DEBUG((EFI_D_ERROR, "%a Start****\n", __FUNCTION__));
+	for (pNode = gMemListHead.ForwardLink; pNode != &gMemListHead; pNode = pNode->ForwardLink) {
+		_my_checkoverride(pNode);
+	}
+	DEBUG((EFI_D_ERROR, "%a End****\n", __FUNCTION__));
+}
+
 static
 VOID __myfree(
 	IN VOID *ptr,
@@ -370,14 +433,14 @@ VOID __myfree(
 	MemCheckHeapTail *pTail = NULL;
 
 	if (CalcCheckSum(pMid, sizeof(MemCheckHeapMid)) != 0) {
-		DEBUG((EFI_D_ERROR, "memory override by others\n"));
+		TRACE_OVERRIDE_BY_OTHERS;
 		TRACE_FREEPOS(filename, nline);
 		return;
 	}
 
 	pHead = (MemCheckHeapHeader *)((CHAR8*)(ptr) - pMid->pool_offset);
 	if (pHead->signature != LEAKCHAECK_HEAD_SIGNATURE) {
-		DEBUG((EFI_D_ERROR, "memory override by others\n"));
+		TRACE_OVERRIDE_BY_OTHERS;
 		TRACE_FREEPOS(filename, nline);
 		return;
 	}
@@ -385,14 +448,14 @@ VOID __myfree(
 	if (CalcCheckSum(
 		(CHAR8*)pHead + OFFSET_OF(MemCheckHeapHeader, total_size),
 		(UINTN)sizeof(MemCheckHeapHeader) - OFFSET_OF(MemCheckHeapHeader, total_size)) != 0) {
-		DEBUG((EFI_D_ERROR, "memory override by others\n"));
+		TRACE_OVERRIDE_BY_OTHERS;
 		TRACE_FREEPOS(filename, nline);
 		return;
 	}
 	pTail = (MemCheckHeapTail *)((CHAR8*)pHead + pHead->tail_offset);
 	if (pTail->signature != LEAKCHAECK_TAIL_SIGNATURE ||
 	    pTail->tail_offset != pHead->tail_offset) {
-		DEBUG((EFI_D_ERROR, "memory override\n"));
+		TRACE_OVERRIDE_BY_OTHERS;
 		TRACE_ALLOCPOS((char *)(pHead+1), pMid->line_num);
 		TRACE_FREEPOS(filename, nline);
 		RemoveEntryList(&pHead->list);
@@ -410,7 +473,7 @@ MemCheck_FreePool (
 	IN UINT32 nLine )
 {
 	if (Buffer == NULL) {
-		DEBUG((EFI_D_ERROR, "Free NULL\n"));
+		TRACE_FREE_NULL;
 		TRACE_FREEPOS(pFileName, nLine);
 		ASSERT(Buffer);
 		return;
@@ -422,13 +485,13 @@ MemCheck_FreePool (
 	}
 
 	if (is_cpool(Buffer)) {
-		DEBUG((EFI_D_ERROR, "not append FreePool to malloc\n"));
+		DEBUG((EFI_D_ERROR, MEMLEAK_TRACE_FLAG"not append FreePool to malloc\n"));
 		TRACE_FREEPOS(pFileName, nLine);
 	}
 	ASSERT(!is_cpool(Buffer));
 
 	if (!is_mcpool(Buffer)) {
-		DEBUG((EFI_D_ERROR, "memory overlap\n"));
+		TRACE_OVERRIDE_BY_OTHERS;
 		TRACE_FREEPOS(pFileName, nLine);
 		ASSERT(is_mcpool(Buffer));
 		return;
@@ -451,7 +514,7 @@ void MemCheck_free(
 	UINT32 nLine)
 {
 	if (Ptr == NULL) {
-		DEBUG((EFI_D_ERROR, "Free NULL\n"));
+		TRACE_FREE_NULL;
 		TRACE_FREEPOS(pFileName, nLine);
 		ASSERT(Ptr);
 		return;
@@ -468,7 +531,7 @@ void MemCheck_free(
 	}
 
 	if (!is_mcpool(Ptr)) {
-		DEBUG((EFI_D_ERROR, "memory overlap\n"));
+		TRACE_OVERRIDE_BY_OTHERS;
 		TRACE_FREEPOS(pFileName, nLine);
 		ASSERT(is_mcpool(Ptr));
 		return;
@@ -515,7 +578,7 @@ void *MemCheck_realloc(
 	if (Ptr != NULL && is_uefipool(Ptr)) {
 		UEFIPOOL_HEAD *pUHead = (UEFIPOOL_HEAD *)((CHAR8*)Ptr - SIZE_OF_UEFIPOOL_HEAD);
 		if (pUHead->Signature != UEFIPOOL_HEAD_SIGNATURE) {
-			DEBUG((EFI_D_ERROR, "memory override by others\n"));
+			TRACE_OVERRIDE_BY_OTHERS;
 			TRACE_ALLOCPOS(pFileName, nLine);
 		}
 		ASSERT(pUHead->Signature == UEFIPOOL_HEAD_SIGNATURE);
@@ -527,14 +590,14 @@ void *MemCheck_realloc(
 
 	if (Ptr != NULL) {
 		if (!is_mcpool(Ptr)) {
-			DEBUG((EFI_D_ERROR, "memory overlap\n"));
+			TRACE_OVERRIDE_BY_OTHERS;
 			TRACE_ALLOCPOS(pFileName, nLine);
 		}
 		ASSERT(is_mcpool(Ptr));
 
 		pMid = (MemCheckHeapMid *) ((CHAR8*)Ptr - sizeof(MemCheckHeapMid));
 		if (CalcCheckSum(pMid, sizeof(MemCheckHeapMid)) != 0) {
-			DEBUG((EFI_D_ERROR, "memory override by others\n"));
+			TRACE_OVERRIDE_BY_OTHERS;
 			TRACE_FREEPOS(pFileName, nLine);
 			ASSERT(0);
 		}

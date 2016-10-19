@@ -111,6 +111,7 @@ __BEGIN_DECLS
               If Arg is not in the interval [-1,+1], errno is set to EDOM.
 **/
 double  acos(double Arg);
+#define acosf(Arg) ((float)acos((double)(Arg)))
 
 /** Compute the principal value of the arc sine of Arg.
 
@@ -120,6 +121,7 @@ double  acos(double Arg);
               If Arg is not in the interval [-1,+1], errno is set to EDOM.
 **/
 double  asin(double Arg);
+#define asinf(Arg) ((float)asin((double)(Arg)))
 
 /** Compute the principal value of the arc tangent of Arg.
 
@@ -128,6 +130,7 @@ double  asin(double Arg);
     @return   The computed value of the arc tangent of Arg in the interval [-pi/2,+pi/2] radians.
 **/
 double  atan(double Arg);
+#define atanf(Arg) ((float)atan((double)(Arg)))
 
 /** Compute the value of the arc tangent of (Num / Denom).
     The sign of both arguments is used to determine the quadrant of the return value.
@@ -138,6 +141,7 @@ double  atan(double Arg);
     @return   The computed value of the arc tangent of (Num / Denom) in the interval [-pi,+pi] radians.
 **/
 double  atan2(double Num, double Denom);
+#define atan2f(Num, Denom) ((float)atan2((double)(Num), (double)Denom))
 
 /** Compute the value of the cosine of Arg, measured in radians.
 
@@ -146,6 +150,7 @@ double  atan2(double Num, double Denom);
     @return   The computed value of the cosine of Arg.
 **/
 double  cos(double Arg);
+#define cosf(Arg) ((float)cos((double)(Arg)))
 
 /** Compute the value of the sine of Arg.
 
@@ -154,6 +159,7 @@ double  cos(double Arg);
     @return   The computed value of the sine of Arg.
 **/
 double  sin(double Arg);
+#define sinf(Arg) ((float)sin((double)(Arg)))
 
 /** Compute the value of the tangent of Arg.
 
@@ -162,6 +168,7 @@ double  sin(double Arg);
     @return   The computed value of the tangent of Arg.
 **/
 double  tan(double Arg);
+#define tanf(Arg) ((float)tan((double)(Arg)))
 
 
 /** Compute the value of the hyperbolic cosine of Arg.
@@ -172,6 +179,7 @@ double  tan(double Arg);
               If the magnitude of Arg is too large, errno is set to ERANGE.
 **/
 double  cosh(double Arg);
+#define coshf(Arg) ((float)cosh((double)(Arg)))
 
 /** Compute the value of the hyperbolic sine of Arg.
 
@@ -181,6 +189,7 @@ double  cosh(double Arg);
               If the magnitude of Arg is too large, errno is set to ERANGE.
 **/
 double  sinh(double Arg);
+#define sinhf(Arg) ((float)sinh((double)(Arg)))
 
 /** Compute the value of the hyperbolic tangent of Arg.
 
@@ -189,6 +198,7 @@ double  sinh(double Arg);
     @return   The computed value of the hyperbolic tangent of Arg.
 **/
 double  tanh(double Arg);
+#define tanhf(Arg) ((float)tanh((double)(Arg)))
 
 
 /** Compute the base-e exponential of Arg.
@@ -199,6 +209,7 @@ double  tanh(double Arg);
               If the magnitude of Arg is too large, errno is set to ERANGE.
 **/
 double  exp(double Arg);
+#define expf(Arg) ((float)exp((double)(Arg)))
 
 /** Break a floating-point number into a normalized fraction and an integral power of 2.
 
@@ -209,6 +220,7 @@ double  exp(double Arg);
               If Value is zero, both parts of the result are zero.
 **/
 double  frexp(double Value, int *Exp);
+#define frexpf(Value, Exp) ((float)frexp((double)(Value), Exp))
 
 /** Multiply a floating-point number, Value, by an integral power of 2, Exp.
 
@@ -219,6 +231,7 @@ double  frexp(double Value, int *Exp);
               If a range error occurs, errno will be set to ERANGE.
 **/
 double  ldexp(double Value, int Exp);
+#define ldexpf(Value, Exp) ((float)ldexp((double)(Value), Exp))
 
 /** Compute the natural logarithm of Arg.
 
@@ -228,6 +241,7 @@ double  ldexp(double Value, int Exp);
               Otherwise, errno will be set to ERANGE if a range error occurs.
 **/
 double  log(double Arg);
+#define logf(Arg) ((float)log((double)(Arg)))
 
 /** Compute the common (base-10) logarithm of Arg.
 
@@ -237,6 +251,7 @@ double  log(double Arg);
               Otherwise, errno will be set to ERANGE if Arg is 0.
 **/
 double  log10(double Arg);
+#define log10f(Arg) ((float)log10((double)(Arg)))
 
 /** Compute the base-2 logarithm of Arg.
 
@@ -246,6 +261,7 @@ double  log10(double Arg);
               Otherwise, errno will be set to ERANGE if Arg is 0.
 **/
 double  log2(double Arg);
+#define log2f(Arg) ((float)log2((double)(Arg)))
 
 /** Break Value into integral and fractional parts, each of which has the same type and sign
     as Value.  Store the integral part in the object pointed to by Integ and return the
@@ -270,6 +286,7 @@ double  modf(double Value, double *Integ);
                 - EDOM: Value is zero and Exp is less than zero.
 **/
 double  pow(double Value, double Exp);
+#define powf(Value, Exp) ((float)pow((double)(Value), (double)Exp))
 
 /** Compute the non-negative square root of Arg.
 
@@ -278,6 +295,7 @@ double  pow(double Value, double Exp);
     @return   The square root of Arg.  If Arg is less than zero, errno is set to EDOM.
 **/
 double  sqrt(double Arg);
+#define sqrtf(Arg) ((float)sqrt((double)(Arg)))
 
 
 /** Compute the smallest integer value not less than Arg.
@@ -287,6 +305,7 @@ double  sqrt(double Arg);
     @return   The ceiling of Arg expressed as a floating-point number.
 **/
 double  ceil(double Arg);
+#define ceilf(Arg) ((float)ceil((double)(Arg)))
 
 /** Compute the absolute value of Arg.
 
@@ -295,6 +314,7 @@ double  ceil(double Arg);
     @return   The absolute value of Arg.
 **/
 double  fabs(double Arg);
+#define fabsf(Arg) ((float)fabs((double)(Arg)))
 
 /** Compute the largest integer value not greater than Arg.
 
@@ -303,6 +323,7 @@ double  fabs(double Arg);
     @return   The largest integer value not greater than Arg, expressed as a floating-point number.
 **/
 double  floor(double);
+#define floorf(Arg) ((float)floor((double)(Arg)))
 
 /** Compute the floating-point remainder of A1 / A2.
 
@@ -313,6 +334,7 @@ double  floor(double);
               returns 0.
 **/
 double  fmod(double A1, double A2);
+#define fmodf(A1, A2) ((float)fmod((double)(A1), (double)A2))
 
 
 int finite(double);

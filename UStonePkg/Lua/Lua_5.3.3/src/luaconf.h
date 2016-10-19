@@ -143,6 +143,8 @@
 #define LUA_INT_TYPE	LUA_INT_LONGLONG
 #endif
 
+
+#define LUA_FLOAT_TYPE	LUA_FLOAT_FLOAT
 #if !defined(LUA_FLOAT_TYPE)
 #define LUA_FLOAT_TYPE	LUA_FLOAT_DOUBLE
 #endif
